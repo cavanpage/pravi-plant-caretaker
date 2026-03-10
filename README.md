@@ -1,5 +1,5 @@
 # Pravi Plant Caretaker (v1.0)
-**A Modular, Industrial-Grade Embedded Ecosystem for High-Precision Irrigation**
+**A Modular, Embedded Ecosystem for High-Precision Plant Maintenance**
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Platform: Arduino Due](https://img.shields.io/badge/Platform-Arduino%20Due%20(ARM%20Cortex--M3)-green.svg)
