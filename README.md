@@ -71,17 +71,124 @@ pio test -e native
 
 ### Building & Flashing to Arduino Due
 
+#### 1. Connect the Board
+
+The Arduino Due has two USB ports. Use the **Native USB port** (closest to the DC barrel jack) for programming.
+
+> **Note:** If PlatformIO cannot find the port, check `System Information > USB` (macOS) or run `ls /dev/cu.*` to identify the correct device. The Due typically appears as `/dev/cu.usbmodem<id>`.
+
+#### 2. Upload
+
 ```bash
 cd firmware
 
-# Compile only
+# Compile only (no board required)
 pio run -e due
 
-# Compile and upload (Due connected via USB)
+# Compile and upload
 pio run -e due --target upload
 
-# Open serial monitor (115200 baud)
+# Open serial monitor at 115200 baud to observe state machine output
 pio device monitor
+```
+
+Expected serial output on a healthy boot:
+
+```
+=== Pravi Plant Caretaker — Booting ===
+[ModuleIdentifier] MOD_ID ADC=425 → Reservoir Kit
+[StateMachine] → IDLE | moisture=62.3%
+```
+
+#### 3. Troubleshooting Upload
+
+| Symptom | Fix |
+|:---|:---|
+| `No device found on ...` | Ensure Native USB port is used, not Programming port |
+| `OSError: [Errno 16] Resource busy` | Close any open serial monitor before uploading |
+| Board not detected at all | Press the **ERASE** button on the Due, then **RESET**, then retry upload |
+
+---
+
+### Hardware Setup
+
+> **Safety first:** The Arduino Due runs at **3.3V logic**. Never connect 5V sensor outputs directly — use a voltage divider. Never drive pumps or solenoids directly from GPIO — use a MOSFET driver or opto-isolated relay with a 1N4007 flyback diode across the load.
+
+#### Pravi Port Pinout (RJ45 / Cat6)
+
+| RJ45 Pin | Signal | Voltage | Arduino Due Pin |
+|:---|:---|:---|:---|
+| 1 | VCC_LOGIC | 3.3V | 3.3V rail |
+| 2 | VCC_ACTUATOR | 12V | External 12V supply |
+| 3 | GND | 0V | GND |
+| 4 | I2C_SDA | 3.3V | SDA1 (Pin 20) |
+| 5 | I2C_SCL | 3.3V | SCL1 (Pin 21) |
+| 6 | SIG_A | 0–3.3V | A0 (moisture signal) |
+| 7 | SIG_B | 0–3.3V | A1 (auxiliary signal) |
+| 8 | MOD_ID | 0–3.3V | A2 (module ID resistor) |
+
+#### Status LED Matrix (All Kits)
+
+Wire three LEDs with 220Ω current-limiting resistors between each GPIO pin and GND.
+
+| Colour | Arduino Due Pin | Meaning |
+|:---|:---|:---|
+| Green | Pin 22 | Healthy — moisture OK |
+| Yellow | Pin 23 | Warning — soil dry or oversaturated |
+| Red | Pin 24 | Critical — immediate attention needed / fault |
+
+```
+Pin 22 ──[220Ω]──[GREEN LED]── GND
+Pin 23 ──[220Ω]──[YELLOW LED]── GND
+Pin 24 ──[220Ω]──[RED LED]── GND
+```
+
+#### Category A: Reservoir Kit Wiring
+
+| Component | Connection | Arduino Due Pin |
+|:---|:---|:---|
+| Capacitive moisture sensor | SIG_A output → A0 | A0 |
+| MOD_ID resistor (4.7 kΩ) | Between A2 and GND | A2 |
+| Submersible pump | Via MOSFET/relay gate | Pin 7 |
+| XKC-Y25 level sensor | Signal output → Pin 9 | Pin 9 |
+
+**Pump wiring (MOSFET driver):**
+```
+Pin 7 ──[MOSFET gate]──[Pump+] ── 12V supply
+                      [Pump-] ──[1N4007 diode]── GND
+```
+
+The 1N4007 flyback diode is placed across the pump terminals (cathode to +, anode to −) to suppress the inductive voltage spike when the pump switches off.
+
+**XKC-Y25 level sensor:**
+```
+XKC-Y25 VCC  → 5V (or 3.3V — check sensor model)
+XKC-Y25 GND  → GND
+XKC-Y25 OUT  → Pin 9   (LOW = liquid detected, HIGH = reservoir empty)
+```
+
+> If your XKC-Y25 is a 5V model, use a 10kΩ/20kΩ voltage divider on the OUT line before connecting to Pin 9.
+
+#### Category B: Direct-Line Kit Wiring
+
+| Component | Connection | Arduino Due Pin |
+|:---|:---|:---|
+| Capacitive moisture sensor | SIG_A output → A0 | A0 |
+| MOD_ID resistor (10.0 kΩ) | Between A2 and GND | A2 |
+| 12V solenoid valve | Via MOSFET/relay gate | Pin 8 |
+| YF-S201 flow sensor | Signal output → Pin 2 | Pin 2 (interrupt) |
+
+**Solenoid wiring (MOSFET driver):**
+```
+Pin 8 ──[MOSFET gate]──[Solenoid+] ── 12V supply
+                       [Solenoid-] ──[1N4007 diode]── GND
+```
+
+**YF-S201 flow sensor:**
+```
+YF-S201 VCC    → 5V
+YF-S201 GND    → GND
+YF-S201 Signal → Pin 2   (pulse output — hardware interrupt, 3.3V-safe on Due)
 ```
 
 ### Calibration
