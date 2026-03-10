@@ -55,6 +55,14 @@ Pravi is designed to be hardware-agnostic regarding the water source.
 - **Go-Gateway:** A high-level service to consume Serial telemetry and serve a local web dashboard.
 - **SMTP Notification Engine:** Automated email alerts for reservoir refills and system errors.
 
+### Phase 4: AI Visual Intelligence
+- **Plant Health Monitor:** Periodic camera captures analyzed by a vision AI model to detect disease, pests, yellowing, and wilting.
+- **Growth Tracking:** Time-lapse comparison to identify stunted growth or abnormal changes over time.
+- **Sensor Fusion Diagnosis:** Correlate visual findings with live sensor data (moisture, NPK, temperature) for higher-confidence plant health assessments.
+- **Automated Response:** AI-driven watering and nutrient adjustments triggered by visual diagnoses.
+
+See [AI Vision Add-on Specification](docs/ai-vision-addon.md) for full architecture and integration details.
+
 ---
 
 ## About the Developer
