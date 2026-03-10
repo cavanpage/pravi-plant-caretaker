@@ -24,7 +24,7 @@ run_suite() {
     echo -e "${YELLOW}▶ Running: test_${suite}${NC}"
     echo "──────────────────────────────────────"
 
-    if pio test -e native --filter "test_${suite}" 2>&1; then
+    if "$PIO" test -e native --filter "test_${suite}" 2>&1; then
         echo -e "${GREEN}✔ test_${suite} passed${NC}"
         PASS=$((PASS + 1))
     else
@@ -37,11 +37,18 @@ echo "======================================"
 echo "  Pravi Native Test Suite"
 echo "======================================"
 
-# Check PlatformIO is available
+# Locate pio — check PATH first, then the pipx install location
+PIO="pio"
 if ! command -v pio &>/dev/null; then
-    echo -e "${RED}Error: 'pio' not found. Install PlatformIO:${NC}"
-    echo "  pip install platformio"
-    exit 1
+    PIPX_PIO="$HOME/.local/bin/pio"
+    if [[ -x "$PIPX_PIO" ]]; then
+        PIO="$PIPX_PIO"
+    else
+        echo -e "${RED}Error: 'pio' not found. Install PlatformIO with:${NC}"
+        echo "  pipx install platformio"
+        echo "Then open a new terminal (or run: source ~/.zshrc)"
+        exit 1
+    fi
 fi
 
 SUITES=(moving_average moisture_sensor state_machine)

@@ -60,8 +60,12 @@ void StateMachine::handleWarning() {
             transitionTo(SystemState::IDLE);
             break;
         case MoistureStatus::DRY:
-            // Threshold crossed — initiate watering
-            transitionTo(SystemState::WATERING);
+            // Only water if an actuator module is attached
+            if (ModuleIdentifier::current() == MODID_RESERVOIR ||
+                ModuleIdentifier::current() == MODID_DIRECT_LINE) {
+                transitionTo(SystemState::WATERING);
+            }
+            // else: sense-only module — hold WARNING, no actuator to drive
             break;
         case MoistureStatus::WET:
             // Oversaturated — hold warning, do not water
@@ -70,8 +74,11 @@ void StateMachine::handleWarning() {
 }
 
 void StateMachine::handleCritical() {
-    // Always attempt watering when critical, regardless of previous state
-    transitionTo(SystemState::WATERING);
+    if (ModuleIdentifier::current() == MODID_RESERVOIR ||
+        ModuleIdentifier::current() == MODID_DIRECT_LINE) {
+        transitionTo(SystemState::WATERING);
+    }
+    // else: sense-only module — hold CRITICAL until actuator is connected
 }
 
 void StateMachine::handleWatering() {

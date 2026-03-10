@@ -1,7 +1,11 @@
 #pragma once
 // ---------------------------------------------------------------------------
 // Arduino HAL mock for native (host) unit testing via PlatformIO + Unity.
-// Tests control hardware state by writing directly to mock_* variables.
+//
+// Hardware state is stored in a function-local static (singleton), so ALL
+// translation units share the same backing store — no per-TU copies.
+//
+// Tests control hardware state via the mock_* macros below.
 // ---------------------------------------------------------------------------
 
 #include <stdint.h>
@@ -16,30 +20,62 @@
 #define INPUT_PULLUP 0x02
 #define OUTPUT       0x01
 #define RISING       0x01
-#define IRAM_ATTR           // no-op on native
+#define IRAM_ATTR
+
+// Analog pin aliases (small integers so they fit the backing arrays)
+#define A0  0
+#define A1  1
+#define A2  2
+#define A3  3
+#define A4  4
+#define A5  5
 
 // ---------------------------------------------------------------------------
-// Controllable hardware state — write these from tests to drive behaviour
+// Shared mock state — one instance across all TUs via inline function-local static
 // ---------------------------------------------------------------------------
-static int           mock_analog_values[16]  = {0};   // indexed by pin number
-static int           mock_digital_values[16] = {0};   // indexed by pin number
-static unsigned long mock_millis_value       = 0;
+namespace mock_arduino {
+    struct State {
+        int           analog_values[16];
+        int           digital_values[32];
+        unsigned long millis_value;
+
+        State() : millis_value(0) {
+            memset(analog_values,  0, sizeof(analog_values));
+            memset(digital_values, 0, sizeof(digital_values));
+        }
+    };
+
+    inline State& state() {
+        static State s;
+        return s;
+    }
+
+    inline void reset() {
+        state() = State();
+    }
+}
+
+// Convenience macros — use these in tests to drive hardware state
+#define mock_analog_values  (mock_arduino::state().analog_values)
+#define mock_digital_values (mock_arduino::state().digital_values)
+#define mock_millis_value   (mock_arduino::state().millis_value)
+#define mock_reset()        (mock_arduino::reset())
 
 // ---------------------------------------------------------------------------
 // HAL stubs
 // ---------------------------------------------------------------------------
-inline int           analogRead(int pin)              { return mock_analog_values[pin % 16]; }
-inline void          digitalWrite(int pin, int val)   { mock_digital_values[pin % 16] = val; }
-inline int           digitalRead(int pin)             { return mock_digital_values[pin % 16]; }
-inline void          pinMode(int, int)                {}
-inline unsigned long millis()                         { return mock_millis_value; }
-inline void          delay(unsigned long)             {}
-inline void          analogReadResolution(int)        {}
-inline int           digitalPinToInterrupt(int pin)   { return pin; }
+inline int           analogRead(int pin)            { return mock_arduino::state().analog_values[pin % 16]; }
+inline void          digitalWrite(int pin, int val) { mock_arduino::state().digital_values[pin % 32] = val; }
+inline int           digitalRead(int pin)           { return mock_arduino::state().digital_values[pin % 32]; }
+inline void          pinMode(int, int)              {}
+inline unsigned long millis()                       { return mock_arduino::state().millis_value; }
+inline void          delay(unsigned long)           {}
+inline void          analogReadResolution(int)      {}
+inline int           digitalPinToInterrupt(int pin) { return pin; }
 inline void          attachInterrupt(int, void(*)(), int) {}
 
 // ---------------------------------------------------------------------------
-// Minimal Serial mock — prints to stdout so test output is visible
+// Minimal Serial mock
 // ---------------------------------------------------------------------------
 struct SerialMock {
     void begin(int) {}
@@ -55,13 +91,9 @@ struct SerialMock {
     void println()                     { printf("\n"); }
 };
 
-static SerialMock Serial;
-
-// ---------------------------------------------------------------------------
-// Helper — reset all mock state between tests
-// ---------------------------------------------------------------------------
-inline void mock_reset() {
-    memset(mock_analog_values,  0, sizeof(mock_analog_values));
-    memset(mock_digital_values, 0, sizeof(mock_digital_values));
-    mock_millis_value = 0;
+inline SerialMock& Serial_instance() {
+    static SerialMock s;
+    return s;
 }
+
+#define Serial (Serial_instance())

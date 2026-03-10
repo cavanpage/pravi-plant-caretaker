@@ -1,4 +1,5 @@
 #pragma once
+#include <stdint.h>
 
 // ---------------------------------------------------------------------------
 // Pravi Plant Caretaker — Central Configuration

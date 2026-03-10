@@ -16,7 +16,7 @@ public:
     bool isOpen() const;
 
     // ISR — call from the hardware interrupt attached to PIN_FLOW_SENSOR.
-    static void IRAM_ATTR pulseCounter();
+    static void pulseCounter();
 
 private:
     bool _open;

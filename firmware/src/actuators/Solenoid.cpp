@@ -29,7 +29,6 @@ bool Solenoid::deliverVolume(float targetLiters) {
 
     unsigned long start      = millis();
     unsigned long stallCheck = millis();
-    uint32_t      stallRef   = 0;
 
     while (true) {
         float currentVolume = static_cast<float>(_pulseCount) / FLOW_CALIBRATION_FACTOR;
@@ -57,7 +56,6 @@ bool Solenoid::deliverVolume(float targetLiters) {
         // Refresh stall window every STALL_CHECK_INTERVAL_MS
         if (millis() - stallCheck >= STALL_CHECK_INTERVAL_MS) {
             stallCheck = millis();
-            stallRef   = _pulseCount;
         }
     }
 }
@@ -72,6 +70,6 @@ bool Solenoid::isOpen() const {
     return _open;
 }
 
-void IRAM_ATTR Solenoid::pulseCounter() {
+void Solenoid::pulseCounter() {
     _pulseCount++;
 }
