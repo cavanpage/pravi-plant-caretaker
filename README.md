@@ -1,4 +1,4 @@
-# Pravi Plant Caretaker (v1.0)
+# Pravi Plant Caretaker
 **A Modular, Embedded Ecosystem for High-Precision Plant Maintenance**
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
