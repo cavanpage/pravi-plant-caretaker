@@ -1,55 +1,61 @@
-# Pravi Plant Caretaker
-**A Modular, Embedded Ecosystem for High-Precision Plant Maintenance**
+# Pravi Plant Caretaker (v1.0)
+**A Modular, Industrial-Grade Embedded System for High-Precision Irrigation**
 
-![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
-![Platform: Arduino Due](https://img.shields.io/badge/Platform-Arduino%20Due%20(ARM%20Cortex--M3)-green.svg)
+## Project Overview
+The Pravi Plant Caretaker (derived from the Croatian word for "Proper") is a deterministic, hardwired irrigation system designed for the Arduino Due (ARM Cortex-M3). Moving away from consumer-grade wireless dependencies, Pravi prioritizes signal integrity, modular hardware expansion, and fail-safe execution. 
 
-## The "Pravi" Philosophy
-Derived from the Croatian word for **"Proper,"** the Pravi Plant Caretaker is an engineering-first approach to indoor horticulture. Moving away from fragile WiFi-dependent consumer gadgets, Pravi focuses on **deterministic execution**, **hardwired signal integrity**, and **modular actuation**.
+This repository serves as a technical showcase for bridging low-level embedded C++ with high-level systems architecture.
 
-This project showcases the bridge between low-level embedded C++ (Real-time safety & sensing) and high-level systems (Go-based telemetry & monitoring).
-
----
-
-## Technical Architecture
-
-### 1. High-Resolution Sensing (12-bit ADC)
-Unlike standard 8-bit microcontrollers, the **Atmel SAM3X8E (ARM Cortex-M3)** provides 4096 levels of resolution. 
-* **Signal Conditioning:** Implemented software-based Moving Average Filters to mitigate EMI noise introduced by 10ft+ Cat6 cable runs.
-* **Capacitive Coupling:** Utilizes non-corrosive capacitive probes to ensure long-term sensor stability without soil electrolysis.
-
-### 2. Deterministic Real-Time Control
-The firmware utilizes a **Non-Blocking State Machine**. By avoiding the `delay()` function, the system maintains a high-frequency polling rate for safety interlocks, ensuring that a "Reservoir Empty" or "Leak Detected" event triggers an immediate hardware interrupt.
-
-### 3. Modular "Add-on" Ecosystem
-Pravi is designed with a standardized **RJ45/Cat6 Interface**, allowing the system to scale from a single pot to a professional-grade grow operation:
-* **Mineral Module:** RS485/Modbus integration for NPK (Nitrogen, Phosphorus, Potassium) and pH monitoring.
-* **Flow Module:** Hall-effect pulse counting for precise mL dosing.
-* **Safety Module:** Non-contact liquid level sensing (XKC-Y25) and floor-leak detection.
-
-
+## Technical Documentation
+* [Hardware Interface Specification](docs/hardware-specs.md) - Pinouts, electrical standards, and modularity.
+* [Software Architecture & Interlocks](docs/software-logic.md) - State machine details and safety logic.
 
 ---
 
-## Engineering Deep Dive
+## Core Engineering Principles
 
-### Interrupt-Driven Flow Verification
-For professional "Direct-Line" (Hose) setups, accuracy is paramount. Pravi uses hardware interrupts to track water volume in real-time.
+### 1. Deterministic Real-Time Control
+The firmware is built on a non-blocking state machine architecture. By eliminating thread-blocking delays, the system maintains a high-frequency polling rate for safety interlocks. This ensures that critical events—such as leak detection or reservoir depletion—trigger immediate hardware responses even during active irrigation cycles.
 
-```cpp
-// ISR for Hall-Effect Flow Sensor
-void pulseCounter() {
-    pulseCount++;
-}
+### 2. High-Resolution Signal Processing
+Utilizing the 12-bit ADC of the Atmel SAM3X8E, Pravi achieves 4096 levels of resolution for moisture sensing. 
 
-// Logic to prevent "Dry-Run" or "Solenoid Failure"
-void executePraviCycle(float targetLiters) {
-    if (!checkWaterAvailability()) return; 
-    
-    openActuator(); // Relay for Pump or Solenoid for Hose
-    while (currentLiters < targetLiters && !timeoutReached()) {
-        currentLiters = calculateVolume(pulseCount);
-        if (stallDetected()) handleCriticalError(); 
-    }
-    closeActuator();
-}
+* **Noise Mitigation:** Implemented software-based Moving Average Filters to stabilize analog readings affected by electromagnetic interference (EMI) over 10ft+ Cat6 cable runs.
+* **Capacitive Sensing:** Employs non-contact capacitive probes to eliminate the corrosion and soil electrolysis common in resistive sensing kits.
+
+---
+
+## Modular Add-on Ecosystem
+
+Pravi is designed to be hardware-agnostic regarding the water source.
+
+### Category A: The Reservoir Kit (Off-Grid)
+* **Actuation:** Low-voltage submersible pump.
+* **Safety:** Non-contact liquid level sensing (XKC-Y25) mounted to the reservoir exterior.
+
+### Category B: The Direct-Line Kit (Professional/Indoor)
+* **Actuation:** 12V DC Solenoid Valve.
+* **Metering:** Hall-effect flow sensor (YF-S201) utilizing hardware interrupts for precise volumetric dosing.
+
+---
+
+## Project Roadmap
+
+### Phase 1: Local Hardware Stack (MVP)
+- Hardwired Sensor Loop (Cat6/RJ45) implementation.
+- 12-bit ADC filtering and calibration algorithms.
+- Local UI: Traffic-light status LED matrix (Status/Warning/Critical).
+
+### Phase 2: Environmental Intelligence
+- **Evapotranspiration Adjustment:** Dynamic watering thresholds based on ambient temperature (DHT22).
+- **Mineral Tracking:** RS485/Modbus integration for 7-in-1 Soil NPK sensors.
+- **Universal Motherboard:** PCB design for the Arduino Due to break out modular RJ45 ports.
+
+### Phase 3: The Full-Stack Bridge
+- **Go-Gateway:** A high-level service to consume Serial telemetry and serve a local web dashboard.
+- **SMTP Notification Engine:** Automated email alerts for reservoir refills and system errors.
+
+---
+
+## About the Developer
+Senior Software Engineer with 10 years of experience in distributed systems and microservices. This project serves as a demonstration of low-level embedded capabilities, real-time safety logic, and hardware-software integration.
