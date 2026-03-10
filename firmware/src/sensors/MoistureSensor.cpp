@@ -2,7 +2,7 @@
 #include <Arduino.h>
 
 MoistureSensor::MoistureSensor()
-    : _filter(FILTER_WINDOW_SIZE), _filtered(0.0f), _status(MoistureStatus::OK)
+    : _filter(), _filtered(0.0f), _status(MoistureStatus::OK)
 {}
 
 void MoistureSensor::update() {

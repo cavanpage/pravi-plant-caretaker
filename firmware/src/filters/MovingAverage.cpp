@@ -1,8 +1,8 @@
 #include "MovingAverage.h"
 #include <string.h>
 
-MovingAverage::MovingAverage(uint8_t windowSize)
-    : _size(windowSize), _index(0), _sum(0), _full(false)
+MovingAverage::MovingAverage()
+    : _index(0), _sum(0), _full(false)
 {
     memset(_samples, 0, sizeof(_samples));
 }
@@ -19,7 +19,7 @@ float MovingAverage::update(int raw) {
 }
 
 float MovingAverage::value() const {
-    uint8_t count = _full ? _size : _index;
+    uint8_t count = _full ? FILTER_WINDOW_SIZE : _index;
     if (count == 0) return 0.0f;
     return static_cast<float>(_sum) / count;
 }
