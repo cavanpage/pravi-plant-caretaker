@@ -19,7 +19,9 @@ This repository serves as a technical showcase for bridging low-level embedded C
 
 | Tool | Purpose | Install |
 |:---|:---|:---|
-| [PlatformIO CLI](https://docs.platformio.org/en/latest/core/installation/index.html) | Build & flash firmware | `pip install platformio` |
+| Python 3 | Required by PlatformIO | Pre-installed on macOS; [python.org](https://python.org) otherwise |
+| pipx | Isolated package installer | `brew install pipx && pipx ensurepath` |
+| [PlatformIO CLI](https://docs.platformio.org/en/latest/core/installation/index.html) | Build & flash firmware | `pipx install platformio` |
 | Arduino Due board support | Installed automatically by PlatformIO on first build | — |
 
 ### Repository Structure
