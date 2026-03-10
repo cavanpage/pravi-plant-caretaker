@@ -3,14 +3,11 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Platform: Arduino Due](https://img.shields.io/badge/Platform-Arduino%20Due%20(ARM%20Cortex--M3)-green.svg)
-![Hardware Logic: 33.V](https://img.shields.io/badge/Logic-3.3V-blue.svg)
 
 ## The "Pravi" Philosophy
 Derived from the Croatian word for **"Proper,"** the Pravi Plant Caretaker is an engineering-first approach to indoor horticulture. Moving away from fragile WiFi-dependent consumer gadgets, Pravi focuses on **deterministic execution**, **hardwired signal integrity**, and **modular actuation**.
 
 This project showcases the bridge between low-level embedded C++ (Real-time safety & sensing) and high-level systems (Go-based telemetry & monitoring).
-
-
 
 ---
 
