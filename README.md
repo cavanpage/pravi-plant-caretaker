@@ -1,4 +1,4 @@
-# Pravi Plant Caretaker (v1.0)
+# Pravi Plant Caretaker
 **A Modular, Industrial-Grade Embedded System for High-Precision Irrigation**
 
 ## Project Overview
