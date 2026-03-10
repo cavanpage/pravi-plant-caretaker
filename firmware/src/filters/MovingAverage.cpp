@@ -12,7 +12,7 @@ float MovingAverage::update(int raw) {
     _samples[_index] = raw;
     _sum += raw;
 
-    _index = (_index + 1) % _size;
+    _index = (_index + 1) % FILTER_WINDOW_SIZE;
     if (_index == 0) _full = true;
 
     return value();
